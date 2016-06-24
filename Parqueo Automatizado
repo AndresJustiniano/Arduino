@@ -99,7 +99,7 @@ if(digitalRead(In)==0)
   if(Available != 0){
     Available--;
     miservo.write(BarUp);   
-    delay(2500);
+    delay(2000);
     miservo.write(BarLow);
     }
   }
@@ -110,7 +110,7 @@ if(digitalRead(Exit)==0)
   if(Available != CAPACITY){
     Available++;
     miservo2.write(BarUp);
-    delay(2500);
+    delay(2800);
     miservo2.write(BarLow);
     }
   }
@@ -118,8 +118,7 @@ if(digitalRead(Exit)==0)
 
 
 void Display(int number){
-byte segs =  segments[number];        //"~" is used for commom anode.
-
+byte segs =  segments[number];        //"~" se usa si el display de 7 segmentos es de anodo comun.
 digitalWrite(segA, bitRead(segs, 0) );
 digitalWrite(segB, bitRead(segs, 1) );
 digitalWrite(segC, bitRead(segs, 2) );
