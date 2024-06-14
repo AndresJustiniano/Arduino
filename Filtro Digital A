@@ -1,0 +1,61 @@
+// Coeficientes del filtro Butterworth
+float b[] = {0.06397, 0.12794, 0.06397};
+float a[] = {1.0, -1.16831, 0.42418};
+
+
+// Variables para almacenar muestras anteriores
+float x[3] = {0, 0, 0};
+float y[3] = {0, 0, 0};
+
+// Parámetros de la señal
+float frequency = 50.0; // Frecuencia de la señal senoidal (Hz)
+float amplitude = 512.0; // Amplitud de la señal senoidal
+float noise_amplitude = 100.0; // Amplitud del ruido
+float sampling_interval = 0.002; // Intervalo de muestreo (2 ms para 500 Hz de frecuencia de muestreo)
+unsigned long previousMillis = 0;
+unsigned long t = 0; // Variable para llevar el tiempo
+
+void setup() {
+  // Configuración inicial
+  Serial.begin(9600);
+  pinMode(9, OUTPUT); // Pin digital para salida de la señal filtrada
+  pinMode(10, OUTPUT); // Pin digital para salida de la señal original
+}
+
+void loop() {
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= sampling_interval * 1000) {
+    previousMillis = currentMillis;
+
+    // Generar señal senoidal con ruido
+    float clean_signal = amplitude * sin(2 * PI * frequency * t * sampling_interval);
+    float noise = noise_amplitude * ((float)rand() / RAND_MAX - 0.5); // Generar ruido
+    float input_signal = clean_signal + noise;
+    t++; // Incrementar tiempo en muestras
+
+    // Desplazar las muestras anteriores
+    x[2] = x[1];
+    x[1] = x[0];
+    x[0] = input_signal;
+
+    y[2] = y[1];
+    y[1] = y[0];
+
+    // Calcular la salida del filtro usando la ecuación en diferencias
+    y[0] = b[0]*x[0] + b[1]*x[1] + b[2]*x[2] - a[1]*y[1] - a[2]*y[2];
+
+    // Enviar la señal original y la señal filtrada al Serial Monitor
+    Serial.print(input_signal);
+    Serial.print(",");
+    Serial.println(y[0]);
+
+    // Escalar la salida filtrada y la señal original a un rango de 0 a 255 para PWM
+    int output_value_filtered = (int)((y[0] + amplitude) / (2 * amplitude) * 255.0);
+    int output_value_original = (int)((input_signal + amplitude) / (2 * amplitude) * 255.0);
+
+    // Salida PWM al pin D9 (señal filtrada) y D10 (señal original)
+    analogWrite(9, output_value_filtered);
+    analogWrite(10, output_value_original);
+  }
+}
