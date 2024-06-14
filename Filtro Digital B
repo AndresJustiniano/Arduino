@@ -1,0 +1,36 @@
+float xn2 = 0;
+float yn2 = 0;
+float xn1 = 0;
+float yn1 = 0;
+int k = 0;
+
+void setup() {
+  Serial.begin(115200);
+}
+
+void loop() {
+  // Generar señal de prueba
+  float t = micros() / 1.0e6;
+  float xn = sin(2 * PI * 2 * t) + 0.2 * sin(2 * PI * 50 * t);
+
+  // Calcular la señal filtrada usando la ecuación en diferencias
+  float yn = 0.06397 * xn + 0.12794 * xn1 + 0.06397 * xn2 - 1.16831 * yn1 - 0.42418 * yn2;
+
+  // Actualizar muestras anteriores
+  xn2 = xn1;
+  xn1 = xn;
+  yn2 = yn1;
+  yn1 = yn;
+
+  // Reducir la tasa de envío de datos
+  if (k % 3 == 0) {
+    // Enviar datos al Serial Plotter
+    Serial.print(xn);
+    Serial.print(" ");
+    Serial.println(yn);
+  }
+  k = k + 1;
+
+  // Esperar para mantener la frecuencia de muestreo
+  delay(2);
+}
